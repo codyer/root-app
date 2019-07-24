@@ -172,6 +172,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            Toast.makeText(MainActivity.this, "Copyright (c) 2019 -- Cody.yi", Toast.LENGTH_LONG).show();
             return true;
         }
         return super.onOptionsItemSelected(item);

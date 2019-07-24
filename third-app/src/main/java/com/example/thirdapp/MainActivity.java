@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             for (int i = 0; i < 10; i++) {
-                mLocalProfile.setValue("test" + i, "value" + i);
+                mLocalProfile.setValue("test" + i, "third-value" + i);
             }
             return true;
         }
