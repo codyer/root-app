@@ -17,7 +17,7 @@ import java.io.InputStream;
 
 /**
  * Created by xu.yi. on 2019-07-23.
- * ThirdApp
+ * ThirdApp  本功能只用作学习用途，如用于非法途径，本人概不负责
  */
 public class AppUtil {
 private static final String TAG = "AppUtil";

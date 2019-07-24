@@ -28,6 +28,9 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
 
+/**
+ * 本功能只用作学习用途，如用于非法途径，本人概不负责
+ */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private final static String THIRD_APK = "third-app-debug.apk";
     private final static String ZIP_DATA = "third-app-data.zip";
