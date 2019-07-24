@@ -7,4 +7,6 @@
     <string name="step3">3、解压第三方数据</string>
     <string name="step4">4、复制第三方数据</string>
     <string name="step5">5、改变数据读写权限</string>
+    <string name="no_root_right">没有ROOT权限无法执行下面操作\n\n请打开应用的Root权限</string>
+    <string name="copy_right">Copyright © 2019 — Cody.yi</string>
 </resources>

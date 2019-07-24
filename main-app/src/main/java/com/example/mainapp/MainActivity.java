@@ -1,9 +1,10 @@
 package com.example.mainapp;
 
+import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,8 +13,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.mainapp.utils.AppUtil;
 import com.example.mainapp.utils.PackageUtil;
@@ -25,18 +29,21 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private final static String commandCopy = "cp -rf /mnt/sdcard/output/* /data/data/com.example.thirdapp/";
-    private final static String commandChmod = "chmod -R 777 /data/data/com.example.thirdapp/";
+    private final static String THIRD_APK = "third-app-debug.apk";
+    private final static String ZIP_DATA = "third-app-data.zip";
+    private final static String COMMAND_COPY = "cp -rf /data/data/com.example.mainapp/cache/data/* /data/data/com.example.thirdapp/";
+    private final static String COMMAND_CHMOD = "chmod -R 777 /data/data/com.example.thirdapp/";
     //设置解压目的路径
-    private final static String OUTPUT_DIRECTORY = Environment.getExternalStorageDirectory().getAbsolutePath() + "/output";
+    private String mDataDirectory;
     private Uri mUri;
     private ProgressDialog mProgressDialog;
     private TextView mStep;
-//    String[] commands = new String[]{"mount -o rw,remount /system", commandCopy};
+//    String[] commands = new String[]{"mount -o rw,remount /system", COMMAND_COPY};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mDataDirectory = getCacheDir().getAbsolutePath() + "/data";
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -54,22 +61,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         unZipData.setOnClickListener(this);
         copyData.setOnClickListener(this);
         changeRight.setOnClickListener(this);
-        if (!ShellUtil.checkRootPermission()) {
-            showToast("没有ROOT权限无法执行下面操作\n\n请打开应用的Root权限", -1);
-        }
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Copyright (c) 2019 -- Cody.yi", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, R.string.copy_right, Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
+        checkPermission();
+    }
+
+    private boolean checkPermission() {
+        //判断用户是否已经授权，未授权则向用户申请授权，已授权则直接进行呼叫操作
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            //注意第二个参数没有双引号
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            showToast("没有文件读写权限无法使用！", -1);
+            return false;
+        } else if (!ShellUtil.checkRootPermission()) {
+            showToast(getString(R.string.no_root_right), -1);
+            return false;
+        }
+        return true;
     }
 
     @Override
     public void onClick(final View v) {
+        if (!checkPermission()) {
+            return;
+        }
         switch (v.getId()) {
             case R.id.copyApp:
                 mProgressDialog.setMessage("正在复制文件，请稍后！");
@@ -77,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        mUri = AppUtil.copyAssetsFile(MainActivity.this, "third-app-debug.apk");
+                        mUri = AppUtil.copyAssetsFile(MainActivity.this, THIRD_APK);
                         if (mUri != null) {
                             showToast("复制软件成功！", 2);
                         } else {
@@ -113,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void run() {
                         try {
-                            ZipUtil.unZip(MainActivity.this, "third-app-data.zip", OUTPUT_DIRECTORY, true);
+                            ZipUtil.unZip(MainActivity.this, ZIP_DATA, mDataDirectory, true);
                             showToast("解压数据完成！", 4);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -129,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        ShellUtil.CommandResult result = ShellUtil.execCommand(commandCopy, true);
+                        ShellUtil.CommandResult result = ShellUtil.execCommand(COMMAND_COPY, true);
                         if (result.errorMsg.equals("Permission denied") || result.result != 0) {
                             showToast("恢复数据失败！", 4);
                         } else {
@@ -146,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        ShellUtil.CommandResult result = ShellUtil.execCommand(commandChmod, true);
+                        ShellUtil.CommandResult result = ShellUtil.execCommand(COMMAND_CHMOD, true);
                         if (result.errorMsg.equals("Permission denied") || result.result != 0) {
                             showToast("改变权限失败", 5);
                         } else {
@@ -172,10 +194,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            Toast.makeText(MainActivity.this, "Copyright (c) 2019 -- Cody.yi", Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.this, R.string.copy_right, Toast.LENGTH_LONG).show();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        //super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Log.d("MainActivity", "获取权限");
+            showToast("没有文件读写权限无法使用！", -1);
+        }
     }
 
     private void showToast(final String msg, final int step) {

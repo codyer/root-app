@@ -22,7 +22,7 @@ import java.io.InputStream;
 public class AppUtil {
 private static final String TAG = "AppUtil";
     public static Uri copyAssetsFile(Context context,String fileName) {
-        String path = Environment.getExternalStorageDirectory() + "/download/";
+        String path = Environment.getExternalStorageDirectory() + "/apk/";
         return copyAssetsFile(context, fileName, path);
     }
 
@@ -40,7 +40,7 @@ private static final String TAG = "AppUtil";
                 boolean mkdir = file.mkdir();
                 Log.e(TAG, "mkdir=" + mkdir);
             }
-            File mFile = new File(path + File.separator + "test.apk");
+            File mFile = new File(path + File.separator + "temp.apk");
             if (!mFile.exists()) {
                 boolean createNewFile = mFile.createNewFile();
                 Log.e(TAG, "createNewFile=" + createNewFile);
