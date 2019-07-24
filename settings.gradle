@@ -1,0 +1,1 @@
+include ':third-app', ':main-app'

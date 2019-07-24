@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">MainApp</string>
+    <string name="action_settings">Settings</string>
+    <string name="step">请执行第%d步操作</string>
+    <string name="step1">1、复制第三方应用</string>
+    <string name="step2">2、安装第三方应用</string>
+    <string name="step3">3、解压第三方数据</string>
+    <string name="step4">4、复制第三方数据</string>
+    <string name="step5">5、改变数据读写权限</string>
+</resources>

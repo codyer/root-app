@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MainActivity"
+    tools:showIn="@layout/activity_main">
+
+    <TextView
+        android:id="@+id/step"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="50dp"
+        android:gravity="center"
+        android:text="@string/step" />
+
+    <Button
+        android:id="@+id/copyApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/step1" />
+
+    <Button
+        android:id="@+id/installApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/step2" />
+
+    <Button
+        android:id="@+id/unZipData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/step3" />
+
+    <Button
+        android:id="@+id/copyData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/step4" />
+
+    <Button
+        android:id="@+id/changeRight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/step5" />
+
+</LinearLayout>
