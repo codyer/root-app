@@ -32,7 +32,8 @@ import java.io.IOException;
  * 本功能只用作学习用途，如用于非法途径，本人概不负责
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private final static String THIRD_APK = "third-app-debug.apk";
+    private final static String THIRD_DEBUG_APK = "third-app-debug.apk";
+    private final static String THIRD_RELEASE_APK = "third-app-release.apk";
     private final static String ZIP_DATA = "third-app-data.zip";
     private final static String COMMAND_COPY = "cp -rf /data/data/com.example.mainapp/cache/data/* /data/data/com.example.thirdapp/";
     private final static String COMMAND_CHMOD = "chmod -R 777 /data/data/com.example.thirdapp/";
@@ -54,12 +55,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mProgressDialog.setTitle("操作提示");
         mStep = findViewById(R.id.step);
         mStep.setText(String.format(getString(R.string.step), 1));
-        Button copyApp = findViewById(R.id.copyApp);
+        Button copyDebugApp = findViewById(R.id.copyDebugApp);
+        Button copyReleaseApp = findViewById(R.id.copyReleaseApp);
         Button install = findViewById(R.id.installApp);
         Button unZipData = findViewById(R.id.unZipData);
         Button copyData = findViewById(R.id.copyData);
         Button changeRight = findViewById(R.id.changeRight);
-        copyApp.setOnClickListener(this);
+        copyDebugApp.setOnClickListener(this);
+        copyReleaseApp.setOnClickListener(this);
         install.setOnClickListener(this);
         unZipData.setOnClickListener(this);
         copyData.setOnClickListener(this);
@@ -96,19 +99,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
         switch (v.getId()) {
-            case R.id.copyApp:
+            case R.id.copyDebugApp:
                 mProgressDialog.setMessage("正在复制文件，请稍后！");
                 mProgressDialog.show();
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        mUri = AppUtil.copyAssetsFile(MainActivity.this, THIRD_APK);
-                        if (mUri != null) {
-                            showToast("复制软件成功！", 2);
-                        } else {
-                            showToast("复制软件失败！", 1);
-                        }
-                        mProgressDialog.dismiss();
+                        copyApk(THIRD_DEBUG_APK);
+                    }
+                }).start();
+                break;
+            case R.id.copyReleaseApp:
+                mProgressDialog.setMessage("正在复制文件，请稍后！");
+                mProgressDialog.show();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        copyApk(THIRD_RELEASE_APK);
                     }
                 }).start();
                 break;
@@ -118,15 +125,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        if (mUri != null) {
-                            int a = PackageUtil.install(MainActivity.this, mUri.getPath());
-                            if (a > 0) {
-                                showToast("安装软件成功！", 3);
-                            } else {
-                                showToast("安装软件失败！", 2);
-                            }
-                        }
-                        mProgressDialog.dismiss();
+                        installApk();
                     }
                 }).start();
                 break;
@@ -137,14 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            ZipUtil.unZip(MainActivity.this, ZIP_DATA, mDataDirectory, true);
-                            showToast("解压数据完成！", 4);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            showToast("解压数据失败！", 3);
-                        }
-                        mProgressDialog.dismiss();
+                        unZipData();
                     }
                 }).start();
                 break;
@@ -154,14 +146,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        ShellUtil.CommandResult result = ShellUtil.execCommand(COMMAND_COPY, true);
-                        if (result.errorMsg.equals("Permission denied") || result.result != 0) {
-                            showToast("恢复数据失败！", 4);
-                        } else {
-                            showToast("恢复数据完成！", 5);
-                        }
-                        Log.d("MainActivity", "successMsg = " + result.successMsg + "\nresult =" + result.result + "\nerrorMsg =" + result.errorMsg);
-                        mProgressDialog.dismiss();
+                        execCommand(COMMAND_COPY, "恢复数据失败！", 4, "恢复数据完成！", 5);
                     }
                 }).start();
                 break;
@@ -171,14 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        ShellUtil.CommandResult result = ShellUtil.execCommand(COMMAND_CHMOD, true);
-                        if (result.errorMsg.equals("Permission denied") || result.result != 0) {
-                            showToast("改变权限失败", 5);
-                        } else {
-                            showToast("改变权限完成", 0);
-                        }
-                        Log.d("MainActivity", "successMsg = " + result.successMsg + "\nresult =" + result.result + "\nerrorMsg =" + result.errorMsg);
-                        mProgressDialog.dismiss();
+                        execCommand(COMMAND_CHMOD, "改变权限失败", 5, "改变权限完成", 0);
                     }
                 }).start();
                 break;
@@ -196,8 +174,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            Toast.makeText(MainActivity.this, R.string.copy_right, Toast.LENGTH_LONG).show();
+        if (id == R.id.action_settings && checkPermission()) {
+            mProgressDialog.setMessage("正在执行初始化操作，请稍后！");
+            mProgressDialog.show();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (copyApk(THIRD_RELEASE_APK) &&
+                            installApk() &&
+                            unZipData() &&
+                            execCommand(COMMAND_COPY, "恢复数据失败！", 4, "恢复数据完成！", 5) &&
+                            execCommand(COMMAND_CHMOD, "改变权限失败", 5, "改变权限完成", 0)) {
+                        showToast("初始化操作完成", 0);
+                    }
+                }
+            }).start();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -212,11 +203,67 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private boolean execCommand(final String command, final String failure, final int stepHold, final String success, final int stepNext) {
+        boolean result = false;
+        ShellUtil.CommandResult commandResult = ShellUtil.execCommand(command, true);
+        if (commandResult.errorMsg.equals("Permission denied") || commandResult.result != 0) {
+            showToast(failure, stepHold);
+        } else {
+            showToast(success, stepNext);
+            result = true;
+        }
+        Log.d("MainActivity", "successMsg = " + commandResult.successMsg + "\nresult =" + commandResult.result + "\nerrorMsg =" + commandResult.errorMsg);
+        mProgressDialog.dismiss();
+        return result;
+    }
+
+    private boolean unZipData() {
+        boolean result = false;
+        try {
+            ZipUtil.unZip(MainActivity.this, ZIP_DATA, mDataDirectory, true);
+            showToast("解压数据完成！", 4);
+            result = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            showToast("解压数据失败！", 3);
+        }
+        mProgressDialog.dismiss();
+        return result;
+    }
+
+    private boolean installApk() {
+        boolean result = false;
+        if (mUri != null) {
+            int a = PackageUtil.install(MainActivity.this, mUri.getPath());
+            if (a > 0) {
+                showToast("安装软件成功！", 3);
+                result = true;
+            } else {
+                showToast("安装软件失败！", 2);
+            }
+        }
+        mProgressDialog.dismiss();
+        return result;
+    }
+
+    private boolean copyApk(final String thirdDebugApk) {
+        boolean result = false;
+        mUri = AppUtil.copyAssetsFile(MainActivity.this, thirdDebugApk);
+        if (mUri != null) {
+            showToast("复制软件成功！", 2);
+            result = true;
+        } else {
+            showToast("复制软件失败！", 1);
+        }
+        mProgressDialog.dismiss();
+        return result;
+    }
+
     private void showToast(final String msg, final int step) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                 if (step == 0) {
                     mStep.setText("所以操作已经完成，可以使用第三方应用了！");
                 } else if (step == -1) {
