@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void run() {
                         copyApk(THIRD_DEBUG_APK);
+                        mProgressDialog.dismiss();
                     }
                 }).start();
                 break;
@@ -116,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void run() {
                         copyApk(THIRD_RELEASE_APK);
+                        mProgressDialog.dismiss();
                     }
                 }).start();
                 break;
@@ -126,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void run() {
                         installApk();
+                        mProgressDialog.dismiss();
                     }
                 }).start();
                 break;
@@ -137,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void run() {
                         unZipData();
+                        mProgressDialog.dismiss();
                     }
                 }).start();
                 break;
@@ -147,6 +152,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void run() {
                         execCommand(COMMAND_COPY, "恢复数据失败！", 4, "恢复数据完成！", 5);
+                        mProgressDialog.dismiss();
                     }
                 }).start();
                 break;
@@ -157,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void run() {
                         execCommand(COMMAND_CHMOD, "改变权限失败", 5, "改变权限完成", 0);
+                        mProgressDialog.dismiss();
                     }
                 }).start();
                 break;
@@ -186,6 +193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             execCommand(COMMAND_COPY, "恢复数据失败！", 4, "恢复数据完成！", 5) &&
                             execCommand(COMMAND_CHMOD, "改变权限失败", 5, "改变权限完成", 0)) {
                         showToast("初始化操作完成", 0);
+                        mProgressDialog.dismiss();
                     }
                 }
             }).start();
@@ -213,7 +221,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             result = true;
         }
         Log.d("MainActivity", "successMsg = " + commandResult.successMsg + "\nresult =" + commandResult.result + "\nerrorMsg =" + commandResult.errorMsg);
-        mProgressDialog.dismiss();
         return result;
     }
 
@@ -227,7 +234,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
             showToast("解压数据失败！", 3);
         }
-        mProgressDialog.dismiss();
         return result;
     }
 
@@ -242,7 +248,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 showToast("安装软件失败！", 2);
             }
         }
-        mProgressDialog.dismiss();
         return result;
     }
 
@@ -255,7 +260,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             showToast("复制软件失败！", 1);
         }
-        mProgressDialog.dismiss();
         return result;
     }
 
@@ -263,7 +267,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                Toast toast = Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
                 if (step == 0) {
                     mStep.setText("所以操作已经完成，可以使用第三方应用了！");
                 } else if (step == -1) {
