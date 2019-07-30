@@ -1,6 +1,7 @@
 package com.example.mainapp;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -32,11 +33,13 @@ import java.io.IOException;
  * 本功能只用作学习用途，如用于非法途径，本人概不负责
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    @SuppressLint("SdCardPath")
+    private final static String THIRD_APK_PACKAGE = "/data/data/com.example.thirdapp/";
     private final static String THIRD_DEBUG_APK = "third-app-debug.apk";
     private final static String THIRD_RELEASE_APK = "third-app-release.apk";
     private final static String ZIP_DATA = "third-app-data.zip";
-    private final static String COMMAND_COPY = "cp -rf /data/data/com.example.mainapp/cache/data/* /data/data/com.example.thirdapp/";
-    private final static String COMMAND_CHMOD = "chmod -R 777 /data/data/com.example.thirdapp/";
+    private final static String COMMAND_COPY = "cp -rf /data/data/com.example.mainapp/cache/data/* " + THIRD_APK_PACKAGE;
+    private final static String COMMAND_CHMOD = "chmod -R 777 " + THIRD_APK_PACKAGE;
     //设置解压目的路径
     private String mDataDirectory;
     private String mApkPath;
