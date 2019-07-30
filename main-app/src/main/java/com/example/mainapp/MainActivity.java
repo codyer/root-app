@@ -3,7 +3,6 @@ package com.example.mainapp;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -40,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final static String COMMAND_CHMOD = "chmod -R 777 /data/data/com.example.thirdapp/";
     //设置解压目的路径
     private String mDataDirectory;
-    private Uri mUri;
+    private String mApkPath;
     private ProgressDialog mProgressDialog;
     private TextView mStep;
 //    String[] commands = new String[]{"mount -o rw,remount /system", COMMAND_COPY};
@@ -239,8 +238,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private boolean installApk() {
         boolean result = false;
-        if (mUri != null) {
-            int a = PackageUtil.install(MainActivity.this, mUri.getPath());
+        if (mApkPath != null) {
+            int a = PackageUtil.install(MainActivity.this, mApkPath);
             if (a > 0) {
                 showToast("安装软件成功！", 3);
                 result = true;
@@ -253,8 +252,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private boolean copyApk(final String thirdDebugApk) {
         boolean result = false;
-        mUri = AppUtil.copyAssetsFile(MainActivity.this, thirdDebugApk);
-        if (mUri != null) {
+        mApkPath = AppUtil.copyAssetsFile(MainActivity.this, thirdDebugApk);
+        if (mApkPath != null) {
             showToast("复制软件成功！", 2);
             result = true;
         } else {
@@ -270,6 +269,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast toast = Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
+                if (mProgressDialog != null) {
+                    mProgressDialog.setMessage(msg);
+                }
                 if (step == 0) {
                     mStep.setText("所以操作已经完成，可以使用第三方应用了！");
                 } else if (step == -1) {
